@@ -5,6 +5,7 @@ No project is perfect, and thus I treat this as a stepping stone and learning ex
 
 This paper is the product of several people; namely, W George and A Chaparro. I took on this project after their departure and drove it to completion with final assays and analyses. 
 The research and data generated are the work of all of us together, including as all AK Schmidt. Original pilot data was obtained by AD Steinbrenner a number of years ago. 
+I credit W George to teaching me how to code in R and getting me started on my coding journey when I needed it most. 
 
 As such, the data and code presented here are not solely mine, but our collaborative effort to identify what is going on with these puzzling beans from Jujuy. 
 Much of the code from Figure 1A and B is by ADS, but I optimized it. 
