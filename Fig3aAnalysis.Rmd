@@ -13,7 +13,7 @@ pacman::p_load(pacman, dplyr, ggplot2, emmeans, rio, tidyr, multcompView, BiocMa
 
 # Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
 
-df <- readr::read_csv("combinedRData.csv", show_col_types = FALSE) %>%
+df <- readr::read_csv("Fig3a_expression1.csv", show_col_types = FALSE) %>%
   mutate(
     Genotype = factor(Genotype, levels = c("G19833", "PI638858", "C4", "C5")),
     BioRep   = as.integer(BioRep)
