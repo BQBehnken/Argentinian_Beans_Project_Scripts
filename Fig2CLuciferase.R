@@ -1,11 +1,3 @@
----
-title: "Figure 2C Luciferase Analysis"
-author: "Brian Behnken"
-date: "2025-08-22"
-output: html_document
----
-
-```{R Setup}
 
 cat("\014")
 rm(list = ls())
@@ -53,10 +45,7 @@ normalize_255 <- luc_four %>%  # gets a mean and SD from 255 for days/biorep
 
 luc_long_annotated_filtered_normalized_df <- left_join(luc_four, normalize_255, by = c("date_tested","biological_replicate")) # adds the mean and sd back to the data frame
 
-```
 
-
-``` {R Statistical Analysis}
 
 ############ Z Score Calculation to bring order to the data and see where all the other promoter fusions rank compared to PI 638858 (255)
 
@@ -101,9 +90,7 @@ andean_plants$promoter <- as.factor(andean_plants$promoter)
 andean_plants$promoter = ordered(x=andean_plants$promoter, 
                                c('PI_638852','PI_638856','PI_661803','PI_638858')) # adds factor order
 
-```
 
-``` {R Statistics & Plotting}
 
 pacman::p_load(ggpubr, rstatix, car)
 
@@ -189,8 +176,6 @@ print(fig2c)
 
 ggsave("fig2c.eps", height = 3,width =2.5, units = "in")
 
-```
-``` {R Extras for Paper}
 
 # I want to be able to make this claim "Promoters from the two In11-responsive lines, pINR PI 638852 and pINR PI 638856, drove XX % higher luciferase activity than the pINR PI 638858 from an unresponsive line, while a second promoter pINR PI 661803 was similarly low in activity  (Fig 2C)."
 
@@ -239,4 +224,3 @@ pct_661803 <- fold_by_acc %>%
   pull(pct_vs_638858)
 
 
-```
