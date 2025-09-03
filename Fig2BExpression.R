@@ -1,11 +1,3 @@
----
-title: "Figure 2B Expression"
-author: "Brian Behnken"
-date: "2025-08-22"
-output: html_document
----
-
-``` {R Setup}
 
 # I always like to start with a clean slate for each separate project, so I clear the environment and the console. 
 
@@ -30,6 +22,7 @@ df_09$date_tested <- "08/09/23"
 
 df_bind <-rbind(df_10,df_09)
 
+
 # Make Genotype a Factor for analysis and order in the way that makes sense to me.
 
 # Decoder 
@@ -49,9 +42,7 @@ df_bind$genotype <- ordered(df_bind$genotype, levels = c("G19","249","256","260"
 head(df_bind)
 str(df_bind)
 
-```
 
-``` {R Statistical Analysis of the Andean Lines}
 
 ### Let's test for normality
 
@@ -162,6 +153,3 @@ ggsave(
   width  = 2.5,
   height = 3,
 )
-
-
-```
