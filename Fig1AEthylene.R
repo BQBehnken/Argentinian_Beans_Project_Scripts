@@ -1,11 +1,3 @@
----
-title: "Fig 1A - Ethylene"
-author: "Brian Behnken"
-date: "2025-08-29"
-output: html_document
----
-
-```{r Setup}
 
 cat("\014")
 rm(list = ls())
@@ -28,9 +20,7 @@ ethylene_data <- ethylene_data %>%
 head(ethylene_data)
 # ADS is the one who did this initial screen.
 
-```
 
-``` {R T test}
 
 # Since this was screen data for the purposes of illustrating the differences between the responsive and unresponsive accessions, we didn't test for normalcy. I find this acceptable given that if we wanted to follow up with any of them, we'd use a larger sample size, since, as you may observe, some groups only have two biological replicates. Additionally, these screens take a lot of time and effort, and so screening 21 is a full day's work. 
 
@@ -72,9 +62,7 @@ print(t_test_results)
 # Optionally, save the results to a CSV file
 write.csv(t_test_results, "t_test_results.csv", row.names = FALSE)
 
-```
 
-``` {R }
 
 # Generate the box plot with jittered points (I hate when jitter is strewn everywhere. I will manually adjust jitter to show overlapping points, but if they don't need to be corrected from a neat line, make it clean.)
 
@@ -94,4 +82,3 @@ ggsave("paperplot.eps", width = 9, height = 3, units = "in")
 
 # all other details of dividers and significance indicators are in Illustrator as I am more comfortable working there on visuals than in R.
 
-```
