@@ -44,3 +44,5 @@ The code for Figure 3B loads a data frame with parental and NIL ethylene peak da
 The code for Figure 3C loads a data frame with MYB expression data from qPCR curated by BQB. Two biological replicaets from one accession died, but they were to help establish a baseline for the two NILs, so we omitted them from testing and analysis. The rest of the replicates were tested for normality and were submitted to an ANOVA before plotting. Colouration was performed in Illustrator. 
 
 The coee for Figure 3D loads a combined data frame of herbivory initial and finall masses curated by BQB and filters out the intial masses so we can compare the final masses of the caterpillars. It tests the data for normality before running a Welch's ANOVA and plotting. 
+
+Code for supplementals forthcoming. DOI forthcoming. 
