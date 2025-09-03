@@ -47,5 +47,6 @@ The code for Figure 3D loads a combined data frame of herbivory initial and fina
 
 The bash script for creating the BAM files takes the paired-end read files and sorts them against the Phaseolus vulgaris G19833 (Pvulgaris_442_v2.0.fa; Phytozome) genome. 
 The bash script for quality control metrics analyzes all of the BAM files and ouputs a summary table of statistics for the data generated from Whole Genome Sequencing (WGS).
+The bash script for SNP calls exises the INR locus and calls SNPs in each of the 21 accessions against G19833 and loads them into a multi track VCF and multi fasta for viewing on third party viewers or IGV/IGB. 
 
 Code for supplementals forthcoming. DOI forthcoming. 
