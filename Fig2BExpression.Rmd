@@ -20,11 +20,11 @@ pacman::p_load(pacman, dplyr, tidyr, stringr, ggplot2, ggeffects, ggforce, multc
 
 ###### LOAD DATA FROM MULTIPLE DAYS AND BIND INTO ONE DATA FRAME ######
 
-df_10<- read.csv("cq_annotated_simple_aug_10_df.csv")
+df_10<- read.csv("Fig2b_expression2.csv")
 
 df_10$date_tested <- "08/10/23"
 
-df_09<- read.csv("cq_annotated_simple_aug_09_df.csv")
+df_09<- read.csv("Fig2b_expression1.csv")
 
 df_09$date_tested <- "08/09/23"
 
