@@ -1,11 +1,3 @@
----
-title: "Figure 2A Ethylene"
-author: "Brian Behnken"
-date: "2025-08-22"
-output: html_document
----
-
-``` {R}
 # I always like to start with a clean slate for each separate project, so I clear the environment and the console. 
 
 cat("\014")
@@ -19,7 +11,7 @@ pacman::p_load(ggplot2, tidyverse, ggpubr, ggrepel, rstatix)
 
 
 # I did not collect or build this data frame, so a lot has to go into interpreting what Ava did and how she annotated things. 
-df <- read.csv(file = "Fig2a_ethylene.csv")
+df <- read.csv(file = "G19x255_F2_screen_Ethylene_Response_Ava_Kloss-Schmidt_simplified_data.csv")
 
 colnames(df)[2:3] <- c("Water","Inceptin11")
 
@@ -59,9 +51,7 @@ annotated_summarised_df$correct_names <- as.factor(annotated_summarised_df$corre
 
 
 write_csv(annotated_summarised_df, "Ava_data_summarized.csv")
-```
 
-``` {r Statistical Analysis}
 
 # Let's check for normality
 # # Assumption checks: test normality of model residuals (Shapiro–Wilk + Q–Q plot) and homogeneity of variances (Levene); use results as guidance, not hard rule.
@@ -90,10 +80,7 @@ stats <- annotated_summarised_df %>%  # preforms t test
   add_significance() %>% 
   add_xy_position(x = "correct_names") # adds xy values
 
-``` 
 
-
-``` {R Plotting}
 
 fig2a <- ggplot(annotated_summarised_df, mapping = aes(x=correct_names, y = ratio))+
   geom_boxplot(outlier.alpha = 0, width = 0.50) +
@@ -109,4 +96,3 @@ ggsave("fig2a.eps", fig2a,
 
 # Save as EPS for manipulation in Adobe Illustrator. The width and height settings will force the jitter size to a certain scale, and I tried to keep these as consistent as possible throughout all my figure panels. 
 
-```
