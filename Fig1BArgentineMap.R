@@ -1,11 +1,3 @@
----
-title: "Fig 1B - Argentine Map"
-author: "Brian Behnken"
-date: "2025-08-29"
-output: html_document
----
-
-```{r setup}
 
 cat("\014")
 rm(list = ls())
@@ -15,10 +7,7 @@ pacman::p_load(dplyr, ggplot2, sf, rnaturalearth, rio)
 world <- ne_countries(scale = "medium", returnclass = "sf")
 class(world)
 
-```
 
-
-```{r cars}
 
 # This is how the raw data was given to me, and I chose to keep it this way to keep the code self-sufficient. But one could totally use the csv that is outputted from this data frame through read_csv. 
 
@@ -92,10 +81,7 @@ in11=c("2-NR",
 
 rio::export(beans, "beans.csv")
 
-``` 
 
-
-``` {R Bubble Map}
 
 # Bubble Map with Scaled circles
 # I decided to annotate the accession names/numbers in Illustrator since it is more efficient for me as a graphic designer. 
@@ -117,7 +103,4 @@ bubblemap <- ggplot(data = world) +
 print(bubblemap)
 
 ggsave("bubblemap.eps")
-
-```
-
 
