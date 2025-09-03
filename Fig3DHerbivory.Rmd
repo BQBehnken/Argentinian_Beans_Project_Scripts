@@ -12,7 +12,7 @@ rm(list = ls())
 
 pacman::p_load(pacman, rio, rstatix, ggplot2, car)
 
-df <- read_csv("herbivory_final.csv")
+df <- read_csv("Fig3d_herbivory.csv")
 
 
 # Step 1: Filter the dataset for final masses of CR4 and CR5 and omit NAs
