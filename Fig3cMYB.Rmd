@@ -1,12 +1,3 @@
----
-title: "Fig 3C MYB Expression"
-author: "Brian Behnken"
-date: "2025-08-30"
-output: html_document
----
-
-```{r setup}
-
 cat("\014")
 rm(list = ls())
 
@@ -60,9 +51,7 @@ colnames(df_long)
 
 head(df_long)
 
-```
 
-``` {R Stats}
 
 # 1) Testing ANOVA residual normality on linear data
 
@@ -125,9 +114,7 @@ table_of_anova <- df_stats %>%
 #  separate(group, into = c("Genotype", "treatment"), sep = "\\.", remove = FALSE)
 
 
-```
 
-``` {r plot}
 
 y_min = 0
 y_max = 13
@@ -151,6 +138,3 @@ print(Fig3C)
 ggsave("Fig3C.eps", width = 7, height = 5) # These dimensions fit overall better with the whole plot
 
 # I changed the colours to match Fig 1A as the treatment group was principally the same in Illustrator. 
-
-```
-
