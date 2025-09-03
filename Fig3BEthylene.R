@@ -1,11 +1,3 @@
----
-title: "2025-07-25 Ethylene"
-author: "Brian Behnken"
-date: "2025-07-26"
-output: html_document
----
-
-```{r setup, include=FALSE}
 # Clear Everything
 cat("\014")
 rm(list = ls())
@@ -19,11 +11,6 @@ colnames(df)
 df_longer <- pivot_longer(df, cols = c("H20","In11", "PvPep1"), names_to = "treatment", values_to = "peaks" ) # pivots the column names to a new column called "treatment" and the values in the columns to a new column called "peaks"
 
 colnames(df_longer)
-
-```
-
-
-```{r Filtered Analysis Using AOV since groups are small}
 
 df_G19 <- df_longer %>% filter(Accession == "G19833")
 df_858 <- df_longer %>% filter(Accession == "PI 638858")
@@ -194,9 +181,7 @@ CR5cld <- cld(object = CR5pairwise_means,
 CR5cld
 
 
-```
 
-``` {r Plot for Paper}
 
 # Create a combined factor and set levels to control the order
 df_longer$AccessionTreatment <- with(df_longer, factor(paste(Accession, treatment, sep = "_"),
@@ -229,6 +214,4 @@ paperplot
 
 ggsave("paperplot.eps", plot = paperplot, width = 4, height = 3)
 
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
