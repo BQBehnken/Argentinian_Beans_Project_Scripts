@@ -13,7 +13,7 @@ pacman::p_load(dplyr, ggplot2, readr, car, emmeans)
 
 # Testing base INR expression in Backcross 
 
-df <- readr::read_csv("20250815RData.csv", show_col_types = FALSE) %>%
+df <- readr::read_csv("Fig3a_expression2.csv", show_col_types = FALSE) %>%
   mutate(
     Genotype = factor(Genotype, levels = c("CR4", "CR5")),
     BioRep   = as.integer(BioRep)
