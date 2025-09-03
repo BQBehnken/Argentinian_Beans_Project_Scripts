@@ -1,15 +1,9 @@
----
-title: "Fig3A Analysis"
-author: "Brian Behnken"
-date: "2025-08-16"
-output: html_document
----
-
-```{r setup}
 cat("\014")
 rm(list = ls())
 
 pacman::p_load(pacman, dplyr, ggplot2, emmeans, rio, tidyr, multcompView, BiocManager, car, readr, rstatix)
+
+# Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
 
 # Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
 
@@ -26,13 +20,6 @@ df <- readr::read_csv("Fig3a_expression1.csv", show_col_types = FALSE) %>%
 colnames(df)
 
 head(df)
-
-
-
-```
-
-
-```{r "Normalcy Tests" & Statistics}
 
 # ==== Part A: "Normalcy" checks & omnibus test across genotypes ===============
 # We compare induction magnitude across genotypes: response = DCQ (Delta Cq values)
@@ -52,9 +39,7 @@ lev_p <- lev[1, "Pr(>F)"]
 print(lev) # 0.1191 no evidence against group variations being equal
 
 
-```
 
-``` {r ANOVA}
 ## ANOVA ##
 aov <- aov(DDCQFC ~ Genotype, data = df)
 
@@ -91,10 +76,7 @@ table_of_anova$cld <- cld$.group
 table_of_anova
 
 
-```
 
-
-```{r plot}
 
 # y_max = 18
 # y_min = 0
@@ -116,7 +98,5 @@ print(plot)
 
 
 ggsave("plot.eps", width = 2, height = 3)
-
-```
 
 
