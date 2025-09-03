@@ -1,16 +1,9 @@
----
-title: "Fig 3D - Herbivory Experiment"
-author: "Brian Behnken"
-date: "2025-08-29"
-output: html_document
----
-
-```{r setup, include=FALSE}
 
 cat("\014")
 rm(list = ls())
 
 pacman::p_load(pacman, rio, rstatix, ggplot2, car)
+
 
 df <- read_csv("Fig3d_herbivory.csv")
 
@@ -35,9 +28,7 @@ print(group_sizes)
 df_fin <- df_fin %>%
   mutate(Group = interaction(Allele, Treatment))  # Create a 'Group' column
 
-```
 
-``` {r Stats}
 
 # Step 2.5: Shapiro-Wilk Test
 
@@ -88,9 +79,7 @@ annot_tbl <- table_of_anova %>%
 annot_tbl
 
 
-```
 
-``` {r Plot}
 
 # 4 Group Analysis Plot
 plot_fin <- ggplot(data = df_fin) +
@@ -110,6 +99,4 @@ plot_fin <- ggplot(data = df_fin) +
 print(plot_fin)
 
 ggsave("paper_plot.eps", plot = plot_fin, height = 3,width = 5, units = "in")
-
-```
 
