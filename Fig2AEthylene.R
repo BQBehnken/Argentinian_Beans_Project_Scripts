@@ -11,7 +11,7 @@ pacman::p_load(ggplot2, tidyverse, ggpubr, ggrepel, rstatix)
 
 
 # I did not collect or build this data frame, so a lot has to go into interpreting what Ava did and how she annotated things. 
-df <- read.csv(file = "G19x255_F2_screen_Ethylene_Response_Ava_Kloss-Schmidt_simplified_data.csv")
+df <- read.csv(file = "Fig2a_ethylene.csv")
 
 colnames(df)[2:3] <- c("Water","Inceptin11")
 
