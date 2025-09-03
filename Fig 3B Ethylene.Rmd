@@ -1,0 +1,234 @@
+---
+title: "2025-07-25 Ethylene"
+author: "Brian Behnken"
+date: "2025-07-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Clear Everything
+cat("\014")
+rm(list = ls())
+
+pacman::p_load(dplyr, tidyr, ggplot2, car, emmeans, rstatix, stringr, multcompView)
+
+df <- read.csv("RDATA.csv")
+
+colnames(df)
+
+df_longer <- pivot_longer(df, cols = c("H20","In11", "PvPep1"), names_to = "treatment", values_to = "peaks" ) # pivots the column names to a new column called "treatment" and the values in the columns to a new column called "peaks"
+
+colnames(df_longer)
+
+```
+
+
+```{r Filtered Analysis Using AOV since groups are small}
+
+df_G19 <- df_longer %>% filter(Accession == "G19833")
+df_858 <- df_longer %>% filter(Accession == "PI 638858")
+df_CR4 <- df_longer %>% filter(Accession == "CR4")
+df_CR5 <- df_longer %>% filter(Accession == "CR5")
+
+################################################################################# G19
+shapiro.test(df_G19$peaks) # => W = 0.87648, p-value = 0.079018 (Data ARE normally distributed)
+
+leveneTest(df_G19$peaks ~ df_G19$treatment) # p = 0.007761 ** (Group variances ARE NOT equal)
+
+
+G19aov <- aov(peaks ~ treatment, data = df_G19)
+
+summary(G19aov)
+
+
+#             Df Sum Sq Mean Sq F value   Pr(>F)    
+# treatment    2  271.7  135.87    53.5 1.49e-07 ***
+# Residuals   15   38.1    2.54                     
+
+G19tukey <- TukeyHSD(G19aov)
+
+# View the results
+print(G19tukey)
+
+# Visualizing Tukey Results in boxplot: set up model
+G19pairwise <- lm(peaks ~ treatment, data = df_G19)
+
+# get (adjusted) weight means per group
+G19pairwise_means <- emmeans(object = G19pairwise,
+                       specs = "treatment")
+
+# add letters to each mean
+G19cld <- cld(object = G19pairwise_means,
+                       adjust = "Tukey",
+                       Letters = letters,
+                       alpha = 0.05)
+
+# show output
+G19cld
+
+################################################################################# PI 638858
+shapiro.test(df_858$peaks) # => p-value = 0.6792 (Data ARE normally distributed)
+
+leveneTest(df_858$peaks ~ df_858$treatment) # p = 2.2e-16 *** (Group variances ARE NOT equal)
+
+P858aov <- aov(peaks ~ treatment, data = df_858)
+
+summary(P858aov)
+
+
+P858tukey <- TukeyHSD(P858aov)
+
+# View the results
+print(P858tukey)
+
+# Visualizing Tukey Results in boxplot: set up model
+P858pairwise <- lm(peaks ~ treatment, data = df_858)
+
+# get (adjusted) weight means per group
+P858pairwise_means <- emmeans(object = P858pairwise,
+                       specs = "treatment")
+
+# add letters to each mean
+P858cld <- cld(object = P858pairwise_means,
+                       adjust = "Tukey",
+                       Letters = letters,
+                       alpha = 0.05)
+
+# show output
+P858cld
+
+################################################################################# CR4 (G19 Allele)
+shapiro.test(df_CR4$peaks) # => p-value = 0.07051 (Data ARE normally distributed)
+
+leveneTest(df_CR4$peaks ~ df_CR4$treatment) # p = 0.02873 * (Group variances ARE NOT equal) # Despite this, since its companion variance is equal, I'm running AOV with tukey for consistency. 
+
+CR4aov <- aov(peaks ~ treatment, data = df_CR4)
+
+summary(CR4aov)
+
+#             Df Sum Sq Mean Sq F value   Pr(>F)    
+# treatment    2  271.7  135.87    53.5 1.49e-07 ***
+# Residuals   15   38.1    2.54                     
+
+CR4tukey <- TukeyHSD(CR4aov)
+
+# View the results
+print(CR4tukey)
+
+# Visualizing Tukey Results in boxplot: set up model
+CR4pairwise <- lm(peaks ~ treatment, data = df_CR4)
+
+# get (adjusted) weight means per group
+CR4pairwise_means <- emmeans(object = CR4pairwise,
+                       specs = "treatment", adjust = "Sidak")
+
+# add letters to each mean
+CR4cld <- cld(object = CR4pairwise_means,
+                       adjust = "Sidak",
+                       Letters = letters,
+                       alpha = 0.05)
+
+# show output
+CR4cld
+
+
+CR4welch <- oneway.test(peaks ~ treatment, data = df_CR4, var.equal = FALSE)
+
+print(CR4welch)
+
+# 2) Games–Howell post hoc (pairwise)
+gh <- games_howell_test(df_CR4, peaks ~ treatment)
+print(gh)
+
+# 3) Build named p-value vector
+pairs <- gh %>%
+  transmute(
+    Comparison = str_replace_all(paste(group1, group2, sep = "-"), "\\s+", ""),
+    p.adj = p.adj
+  ) %>%
+  filter(!is.na(p.adj)) %>%
+  distinct(Comparison, .keep_all = TRUE)
+
+pvec <- setNames(pairs$p.adj, pairs$Comparison)
+
+# 4) Compact letter display
+letters <- multcompLetters(pvec, threshold = 0.05)$Letters
+letters_tbl <- data.frame(Group = names(letters), Letters = letters, row.names = NULL)
+
+letters_tbl
+
+################################################################################# CR5 (858 Allele)
+
+shapiro.test(df_CR5$peaks) # => p-value = 0.3354 (Data ARE normally distributed)
+
+leveneTest(df_CR5$peaks ~ df_CR5$treatment) # 0.7236 (Group variances ARE equal)
+
+CR5aov <- aov(peaks ~ treatment, data = df_CR5)
+
+summary(CR5aov)
+
+#             Df Sum Sq Mean Sq F value Pr(>F)    
+# treatment    2  27.32   13.66   19.79 6.22e-05 ***
+# Residuals   15  10.36    0.69 
+
+
+CR5tukey <- TukeyHSD(CR5aov)
+
+# View the results
+print(CR5tukey)
+
+# Visualizing Tukey Results in boxplot: set up model
+CR5pairwise <- lm(peaks ~ treatment, data = df_CR5)
+
+# get (adjusted) weight means per group
+CR5pairwise_means <- emmeans(object = CR5pairwise,
+                       specs = "treatment")
+
+# add letters to each mean
+CR5cld <- cld(object = CR5pairwise_means,
+                       adjust = "Tukey",
+                       Letters = letters,
+                       alpha = 0.05)
+
+# show output
+CR5cld
+
+
+```
+
+``` {r Plot for Paper}
+
+# Create a combined factor and set levels to control the order
+df_longer$AccessionTreatment <- with(df_longer, factor(paste(Accession, treatment, sep = "_"),
+                                                       levels = unique(paste(Accession, treatment, sep = "_"))))
+
+df_CR45 <- df_longer %>% 
+  filter(Accession %in% c("CR4", "CR5"))
+
+y_min = 2
+y_max = 35
+
+paperplot <- ggplot(data = df_CR45) +
+  geom_boxplot(mapping = aes(x = AccessionTreatment, y = peaks, fill = treatment)) +
+  geom_jitter(mapping = aes(x = AccessionTreatment, y = peaks, color = treatment), 
+              alpha = 1, size = 1, position = position_dodge(width = 0.2)) + 
+  #geom_text(data = cld_df, aes(x = treatment, y = emmean, label = .group), vjust = -4, position = position_dodge(width = 0.2)) + # too complicated for these facets - I'll do it manually.
+  labs(x = "Accession and Treatment",
+       y = "Ethylene (nLg-1h-1)",
+       title = "Ethylene Treatment By Accessions",
+       caption = "",
+       fill = "Treatment") +
+  theme_linedraw() +
+  scale_y_continuous(limits = c(y_min, y_max)) +
+  scale_fill_brewer(palette = "Set2") +
+  scale_color_brewer(palette = "Set2") +
+  facet_wrap(~ Accession, scales = "free_x") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+paperplot
+
+ggsave("paperplot.eps", plot = paperplot, width = 4, height = 3)
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,167 @@
+---
+title: "Figure 2B Expression"
+author: "Brian Behnken"
+date: "2025-08-22"
+output: html_document
+---
+
+``` {R Setup}
+
+# I always like to start with a clean slate for each separate project, so I clear the environment and the console. 
+
+cat("\014")
+rm(list = ls())
+
+# I like using pacman to manage and load packages. 
+# I sometimes load more than I need, and that's usually an artifact of messing around with analyses and plots that I don't ultimately end up using and forget to clear them. 
+
+pacman::p_load(pacman, dplyr, tidyr, stringr, ggplot2, ggeffects, ggforce, multcompView)
+
+
+###### LOAD DATA FROM MULTIPLE DAYS AND BIND INTO ONE DATA FRAME ######
+
+df_10<- read.csv("cq_annotated_simple_aug_10_df.csv")
+
+df_10$date_tested <- "08/10/23"
+
+df_09<- read.csv("cq_annotated_simple_aug_09_df.csv")
+
+df_09$date_tested <- "08/09/23"
+
+df_bind <-rbind(df_10,df_09)
+
+# Make Genotype a Factor for analysis and order in the way that makes sense to me.
+
+# Decoder 
+# G19 = G19833
+# 249 = PI 638852
+# 260 = PI 638856
+# 253 = PI 661803
+# 255 = PI 638858
+# BCG19 = BC2F3 Generation carrying the promoter haplotype for G19833
+# BC255 = BC2F3 Generation carrying the promoter haplotype for PI 638858
+
+df_bind$genotype <- as.factor(df_bind$genotype)
+df_bind$genotype <- ordered(df_bind$genotype, levels = c("G19","249","256","260","253","255","BCG19","BC255","water"))
+
+# Check header and structure
+
+head(df_bind)
+str(df_bind)
+
+```
+
+``` {R Statistical Analysis of the Andean Lines}
+
+### Let's test for normality
+
+pacman::p_load(ggpubr, rstatix, car)
+
+andean_df <- df_bind %>% 
+  filter(genotype %in% c("249","260","253","255")) %>% 
+  mutate(temp_genotype = genotype,genotype = case_when(temp_genotype == "249" ~ "PI_638852",
+                                                       temp_genotype == "260" ~ "PI_638856",
+                                                       temp_genotype == "253" ~ "PI_661803",
+                                                       temp_genotype == "255" ~ "PI_638858"))
+
+
+andean_df$genotype <- as.factor(andean_df$genotype)
+andean_df$genotype <- ordered(andean_df$genotype, levels = c("PI_638852","PI_638856","PI_661803","PI_638858"))
+
+# Fit model first so we test what the model assumes
+mod <- aov(norm_deltadelta_Ct ~ genotype, data = andean_df)
+
+# Normality of residuals (plus visual check)
+shapiro.test(residuals(mod)) # W = 0.93752, p-value = 0.1436; no evidence of deviation from normality. 
+ggqqplot(residuals(mod)) # plot looks good
+
+# Homogeneity of variances (median-centered Levene = Brown–Forsythe)
+leveneTest(andean_df$norm_deltadelta_Ct ~ andean_df$genotype) # 0.003462 **; significant evidence of unequal group variances
+
+# Plot to mean of PI 638858 (255)
+
+# 1) Compute the normalizing constant from PI 638858:
+norm_factor <- andean_df %>%
+  filter(genotype == "PI_638858") %>%
+  summarise(mean_858 = mean(norm_deltadelta_Ct, na.rm = TRUE)) %>%
+  pull(mean_858)
+
+# 2) Add a new “relative expression” column to serve as the computer factors to the mean of PI 638858
+andean_df <- andean_df %>%
+  mutate(rel_expression = norm_deltadelta_Ct / norm_factor)
+
+aov_tbl <- andean_df %>% 
+  dplyr::group_by(genotype) %>% 
+  summarize(mean = mean(rel_expression, na.rm = T), quant = quantile(rel_expression, probs = 0.75, na.rm = T)) %>% 
+  arrange(desc(mean))
+
+# 3) Welch's ANOVA (no equal-variances assumption)
+welch_res <- oneway.test(rel_expression ~ genotype, data = andean_df, var.equal = FALSE)
+print(welch_res) # p-value = 0.0001282
+
+# 4) Games–Howell post hoc (pairwise)
+gh <- games_howell_test(andean_df, rel_expression ~ genotype)
+print(gh)
+
+# 5) Build named p-value vector for plotting
+pairs <- gh %>%
+  transmute(
+    Comparison = str_replace_all(paste(group1, group2, sep = "-"), "\\s+", ""),
+    p.adj = p.adj
+  ) %>%
+  filter(!is.na(p.adj)) %>%
+  distinct(Comparison, .keep_all = TRUE)
+
+pvec <- setNames(pairs$p.adj, pairs$Comparison)
+
+# 6) Compact letter display for plotting letters
+letters <- multcompLetters(pvec, threshold = 0.05)$Letters
+letters_tbl <- data.frame(Group = names(letters), Letters = letters, row.names = NULL)
+
+letters_tbl
+
+# Now turn the letters tibble into a data frame
+letters_tbl <- data.frame(
+  genotype = names(letters),
+  Letters = letters,
+  row.names = NULL
+)
+
+# Join into your summary table of means/quantiles
+aov_tbl <- aov_tbl %>%
+  left_join(letters_tbl, by = "genotype")
+
+aov_tbl
+
+# 7) Plot rel_expression so that PI 638858 sits at 1,
+fig2b <- ggplot(andean_df, aes(x = genotype, y = rel_expression)) +
+  geom_boxplot(outlier.alpha = 0) +
+  geom_jitter(shape = 16, alpha = 1, size = 2,
+              position = position_dodge(width = 0.5)) +
+  geom_text(
+    data = aov_tbl,
+    aes(x = genotype, y = quant, label = Letters),
+    size = 3, vjust = -1, hjust = -1
+  ) +
+  labs(
+    x = expression(paste( italic("Phaseolus vulgaris"), " Accession")),
+    y = "Expression (relative to PI 638858 = 1)"
+  ) +
+  theme_linedraw() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1)
+  )
+
+print(fig2b)
+
+# 5) Save as EPS for manipulation in Adobe Illustrator. The width and height settings will force the jitter size to a certain scale, and I tried to keep these as consistent as possible throughout all my figure panels. 
+ggsave(
+  file   = "fig2b.eps",
+  plot   = fig2b,
+  width  = 2.5,
+  height = 3,
+)
+
+
+```

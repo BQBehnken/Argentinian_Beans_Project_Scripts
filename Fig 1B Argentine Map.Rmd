@@ -1,0 +1,123 @@
+---
+title: "Fig 1B - Argentine Map"
+author: "Brian Behnken"
+date: "2025-08-29"
+output: html_document
+---
+
+```{r setup}
+
+cat("\014")
+rm(list = ls())
+
+pacman::p_load(dplyr, ggplot2, sf, rnaturalearth, rio)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+class(world)
+
+```
+
+
+```{r cars}
+
+# This is how the raw data was given to me, and I chose to keep it this way to keep the code self-sufficient. But one could totally use the csv that is outputted from this data frame through read_csv. 
+
+beans <- data.frame(accessions=c("W6 17491","PI 640965",
+"PI 638864","PI 638852",
+"PI 638857","PI 661803",
+"W6 17020","PI 638858",
+"W6 17024","PI 638861",
+"PI 661804","PI 638863",
+"PI 638856","W6 17017",
+"W6 17019","W6 17021",
+"PI 638859","W6 17025",
+"PI 638860","W6 17028",
+"PI 638862","W6 13032"),
+lat=c(-23.883,
+-25.16138889,
+-26.23305556,
+-23.70388889,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65,
+-23.65),
+lng=c(-65.066,-65.61138889,
+-65.48305556,-65.53805556,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667,
+-65.41666667,-65.41666667),
+in11=c("2-NR",
+"2-NR",
+"1-R",
+"1-R",
+"2-NR",
+"2-NR",
+"2-NR",
+"2-NR",
+"1-R",
+"1-R",
+"1-R",
+"1-R",
+"1-R",
+"1-R",
+"2-NR",
+"1-R",
+"1-R",
+"1-R",
+"1-R",
+"2-NR",
+"1-R",
+"1-R")
+)
+
+rio::export(beans, "beans.csv")
+
+``` 
+
+
+``` {R Bubble Map}
+
+# Bubble Map with Scaled circles
+# I decided to annotate the accession names/numbers in Illustrator since it is more efficient for me as a graphic designer. 
+
+beans_summary <- beans %>%
+    group_by(lat, lng, in11) %>%
+    summarize(count = n())  # Aggregate count by location and response type
+
+bubblemap <- ggplot(data = world) +
+    geom_sf(fill = "grey85") +
+    geom_point(data = beans_summary, aes(x = lng, y = lat, size = count, color = in11), alpha = 1) +
+    scale_color_manual(values = c("1-R" = "red", "2-NR" = "blue")) +
+    scale_size(range = c(2, 8)) + # Scale sizes to make differences more visible
+    coord_sf(xlim = c(-75, -45.5), ylim = c(-32, -15), expand = FALSE) +
+       labs(x = "Longitude", y = "Latitude", color = "Response", size = "Count") +
+       theme_bw() +
+       theme(legend.position = "right")
+
+print(bubblemap)
+
+ggsave("bubblemap.eps")
+
+```
+
+

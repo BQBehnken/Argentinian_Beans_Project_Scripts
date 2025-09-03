@@ -1,0 +1,115 @@
+---
+title: "Fig 3D - Herbivory Experiment"
+author: "Brian Behnken"
+date: "2025-08-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+cat("\014")
+rm(list = ls())
+
+pacman::p_load(pacman, rio, rstatix, ggplot2, car)
+
+df <- read_csv("herbivory_final.csv")
+
+
+# Step 1: Filter the dataset for final masses of CR4 and CR5 and omit NAs
+df_fin <- df %>%
+  filter(day == "Final" & Allele %in% c("G19833", "PI_638858")) %>%  # Only CR4 and CR5 final masses
+  drop_na(mg)  # Remove rows with NA in the mg column
+
+# Print a preview of the data to confirm
+print(head(df_fin))
+
+# Step 2: Calculate the n size for each group (treated and untreated) for CR4 and CR5
+group_sizes <- df_fin %>%
+  group_by(Allele, Treatment) %>%
+  summarize(n = n())
+
+# Print the group sizes
+print(group_sizes)
+
+# Combine Genotype and Treatment into a single factor for comparison
+df_fin <- df_fin %>%
+  mutate(Group = interaction(Allele, Treatment))  # Create a 'Group' column
+
+```
+
+``` {r Stats}
+
+# Step 2.5: Shapiro-Wilk Test
+
+# 1) Testing ANOVA residual normality on linear data
+aov_fit <- aov(mg ~ Group, data = df_fin)
+shapiro_res <- shapiro.test(residuals(aov_fit))
+print(shapiro_res) # W = 0.90213, p-value = 3.727e-05 # Strong evidence against normality
+
+lev <- car::leveneTest(mg ~ Group, data = df_fin)
+lev_p <- lev[1, "Pr(>F)"]
+print(lev) # 0.1131 no evidence against group variations being equal
+
+
+# 1) Welch's ANOVA (no equal-variances assumption)
+welch <- oneway.test(mg ~ Group, data = df_fin, var.equal = FALSE)
+print(welch) # p-value = 8.746e-06 Great - let's do a post-hoc test
+
+# 2) Games–Howell post hoc (pairwise)
+gh1 <- games_howell_test(mg ~ Group, data = df_fin)
+print(gh1)
+
+# 3) Build named p-value vector
+pairs1 <- gh1 %>%
+  transmute(
+    Comparison = str_replace_all(paste(group1, group2, sep = "-"), "\\s+", ""),
+    p.adj = p.adj
+  ) %>%
+  filter(!is.na(p.adj)) %>%
+  distinct(Comparison, .keep_all = TRUE)
+
+pvec1 <- setNames(pairs1$p.adj, pairs1$Comparison)
+
+# 4) Compact letter display
+letters1 <- multcompLetters(pvec1, threshold = 0.05)$Letters
+letters1_tbl <- data.frame(Group = names(letters1), Letters = letters1, row.names = NULL)
+
+letters1_tbl
+
+table_of_anova <- df_fin %>% 
+  dplyr::group_by(Group) %>% 
+  summarize(mean = mean(mg, na.rm = T), quant = quantile(mg, probs = 0.75, na.rm = T)) %>% 
+  arrange(desc(mean))
+
+# join into your summary table of means/quantiles
+annot_tbl <- table_of_anova %>%
+  left_join(letters1_tbl, by = "Group")
+
+annot_tbl
+
+
+```
+
+``` {r Plot}
+
+# 4 Group Analysis Plot
+plot_fin <- ggplot(data = df_fin) +
+  geom_boxplot(mapping = aes(x = Group, y = mg, fill = Group)) +
+  geom_jitter(mapping = aes(x = Group, y = mg, fill = Group), 
+              shape = 16, alpha = 1, size = 1.5, position = position_dodge(width = 0.6)) +
+   geom_text(data = annot_tbl,
+            aes(x = Group, y = quant, label = Letters),
+            vjust = -1, hjust = -1, size = 3) +
+  labs(x = "", 
+       y = "Mass (mg)", 
+       title = "4 Group analysis", 
+       fill = "Group") +
+  theme_linedraw()
+
+# Print the plot
+print(plot_fin)
+
+ggsave("paper_plot.eps", plot = plot_fin, height = 3,width = 5, units = "in")
+
+```
+

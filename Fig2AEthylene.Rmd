@@ -1,0 +1,112 @@
+---
+title: "Figure 2A Ethylene"
+author: "Brian Behnken"
+date: "2025-08-22"
+output: html_document
+---
+
+``` {R}
+# I always like to start with a clean slate for each separate project, so I clear the environment and the console. 
+
+cat("\014")
+rm(list = ls())
+
+
+pacman::p_load(ggplot2, tidyverse, ggpubr, ggrepel, rstatix)
+
+# I like using pacman to manage and load packages. 
+# I sometimes load more than I need, and that's usually an artifact of messing around with analyses and plots that I don't ultimately end up using and forget to clear them. 
+
+
+# I did not collect or build this data frame, so a lot has to go into interpreting what Ava did and how she annotated things. 
+df <- read.csv(file = "G19x255_F2_screen_Ethylene_Response_Ava_Kloss-Schmidt_simplified_data.csv")
+
+colnames(df)[2:3] <- c("Water","Inceptin11")
+
+pivot_df <- df %>% pivot_longer(cols = c("Water","Inceptin11"),names_to = "treatment",values_to = "ethylene")
+
+annotated_df <- pivot_df %>% 
+  mutate(type = case_when(genotype == "G19"~"G19",
+                          genotype == "255"~"255",
+                          bp_at_snp == "T"~"255 allele",
+                          bp_at_snp == "T/A"~"Heterozygus",
+                          bp_at_snp == "A"~"G19 allele"))
+
+# Make sure they're all counted as factors
+annotated_df$type <- as.factor(annotated_df$type)
+
+# Order them in a way that makes sense
+annotated_df$type <- ordered(annotated_df$type, levels = c("G19","255","G19 allele","Heterozygus","255 allele"))
+
+# Make sure the treatment vallues are factors as well
+annotated_df$treatment <- as.factor(annotated_df$treatment)
+
+# Order the treatments in a way that makes sense
+annotated_df$treatment <- ordered(annotated_df$treatment, levels = c("Water","Inceptin11"))
+
+#Pivot and derive ratios of In11 to water so we can be consistent with how that was recorded in Fig. 1A
+annotated_summarised_df <- annotated_df %>% 
+  pivot_wider(names_from = "treatment", values_from = "ethylene") %>% 
+  mutate(ratio=Inceptin11/Water) %>% 
+  mutate(correct_names = case_when(str_detect(type, "255") == T ~ "PI 638858",
+                                   str_detect(type, "G19|Het.*") == T ~ "G19833/-\n(HM/HT)" ))
+# Remove the shorthands
+annotated_summarised_df <- annotated_summarised_df %>%
+  filter(!genotype %in% c("G19", "255"))
+
+# This is all to build a fully fleshed out data frame with all of our naming conventions and gentoyping details confirmed HM = Homozygous, HT = Heterozygous
+annotated_summarised_df$correct_names <- as.factor(annotated_summarised_df$correct_names) %>% ordered(c("G19833/-\n(HM/HT)","PI 638858"))
+
+
+write_csv(annotated_summarised_df, "Ava_data_summarized.csv")
+```
+
+``` {r Statistical Analysis}
+
+# Let's check for normality
+# # Assumption checks: test normality of model residuals (Shapiro–Wilk + Q–Q plot) and homogeneity of variances (Levene); use results as guidance, not hard rule.
+# # The models we will use allegedly explain systematic effects (e.g., group means); residuals are what’s left—each data point’s deviation from that predicted mean.
+
+pacman::p_load(ggpubr, rstatix, car)
+
+# Fit model first so we test what the model assumes
+m <- aov(ratio ~ correct_names, data = annotated_summarised_df)
+
+# Normality of residuals (plus visual check)
+shapiro.test(residuals(m)) # W = 0.93019, p-value = 0.4128; no evidence against normality
+ggqqplot(residuals(m)) # plot looks good
+
+# Homogeneity of variances (median-centered Levene = Brown–Forsythe)
+leveneTest(ratio ~ correct_names, data = annotated_summarised_df) # p = 0.1443; no evidence of unequal variances
+
+# Let's proceed with a Student's T Test since the data has no evidence against normal distribution
+ttest <- t_test(ratio ~ correct_names, data = annotated_summarised_df)
+
+print(ttest)
+
+# Let's put this into a data frame for plotting
+stats <- annotated_summarised_df %>%  # preforms t test
+  t_test(ratio ~ correct_names) %>% 
+  add_significance() %>% 
+  add_xy_position(x = "correct_names") # adds xy values
+
+``` 
+
+
+``` {R Plotting}
+
+fig2a <- ggplot(annotated_summarised_df, mapping = aes(x=correct_names, y = ratio))+
+  geom_boxplot(outlier.alpha = 0, width = 0.50) +
+  geom_jitter(position = position_dodge(0.5)) +
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.10))) +
+  stat_pvalue_manual(stats, label = "p = {p}{p.signif}") +
+  labs(x = "Allele type",
+       y = "Ethylene ratio\n(In11 / H₂O)")
+
+
+ggsave("fig2a.eps", fig2a,
+       width = 3, height = 3)
+
+# Save as EPS for manipulation in Adobe Illustrator. The width and height settings will force the jitter size to a certain scale, and I tried to keep these as consistent as possible throughout all my figure panels. 
+
+```

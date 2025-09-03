@@ -1,0 +1,156 @@
+---
+title: "Fig 3C MYB Expression"
+author: "Brian Behnken"
+date: "2025-08-30"
+output: html_document
+---
+
+```{r setup}
+
+cat("\014")
+rm(list = ls())
+
+pacman::p_load(dplyr, ggplot2, tidyr, emmeans, stringr, car, ggpubr, readr)
+
+# Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
+
+df <- readr::read_csv("20250815RData.csv", show_col_types = FALSE) %>%
+  mutate(
+    Genotype = factor(Genotype, levels = c("G19833", "PI638858", "CR4", "CR5")),
+    BioRep   = as.integer(BioRep)
+  )
+
+df_long <- pivot_longer(df, cols = c("H2O", "In11"), names_to = "treatment", values_to = "expression")
+
+df_stats <- df_long %>% filter(Genotype !="PI638858") # Two bioreps died before they could be tested, and this group was only to visualize baseline for PI 638858 MYB expression. What we care about is the expression between the two backcrosses, so we're omitting the group with only 2 bioreps from stats since all previous attempts to do this broke the ANOVA or resulted in NAs. 
+
+# For the Data frame for stats
+
+df_stats <- df_stats %>%
+  mutate(rel_exp = 2^(-expression))
+
+min_mean <- df_stats %>%
+  group_by(Genotype) %>%
+  summarise(m = mean(rel_exp, na.rm = TRUE)) %>%
+  summarise(min_val = min(m)) %>%
+  pull(min_val)
+
+# This is to relativize all expression over the lowest mean
+df_stats <- df_stats %>%
+  mutate(DCQ_rel = rel_exp / min_mean)
+
+df_stats$group <- interaction(df_stats$Genotype, df_stats$treatment)
+
+### For the data frame for plotting.
+df_long <- df_long %>%
+  mutate(rel_exp = 2^(-expression))
+
+min_mean <- df_long %>%
+  group_by(Genotype) %>%
+  summarise(m = mean(rel_exp, na.rm = TRUE)) %>%
+  summarise(min_val = min(m)) %>%
+  pull(min_val)
+
+df_long <- df_long %>%
+  mutate(DCQ_rel = rel_exp / min_mean)
+
+df_long$group <- interaction(df_long$Genotype, df_long$treatment)
+
+colnames(df_long)
+
+head(df_long)
+
+```
+
+``` {R Stats}
+
+# 1) Testing ANOVA residual normality on linear data
+
+aov_fit <- aov(expression ~ Genotype, data = df_stats)
+shapiro_res <- shapiro.test(residuals(aov_fit))
+print(shapiro_res) # W = 0.95532, p-value = 0.3518 # No evidence against normality
+
+lev <- car::leveneTest(expression ~ group, data = df_stats)
+lev_p <- lev[1, "Pr(>F)"]
+print(lev) # 0.795 no evidence against group variations being equal
+
+ggqqplot(df_stats$expression) # Visualize the spread.
+
+## Standard ANOVA
+
+aov <- aov(expression ~ group, data = df_stats)
+
+summary(aov) # p =  2.9e-08; at least 1 group is different; proceed with Tukey
+
+tukey <- TukeyHSD(aov)
+
+# View the results
+print(tukey)
+
+# Visualizing Tukey Results in boxplot: set up model
+pairwise <- lm(expression ~ group, data = df_stats)
+
+# get (adjusted) weight means per group
+emm <- emmeans(object = pairwise,
+                       specs = "group")
+
+# add letters to each mean
+cld <- cld(object = emm,
+                       adjust = "Tukey",
+                       Letters = letters,
+                       alpha = 0.05)
+# check output
+cld
+
+Make a joinable letters table from emmeans::cld output
+cld_tbl <- as.data.frame(cld) %>%
+  transmute(
+    group = as.character(group),       # ensure same type as in table_of_anova
+    cld   = str_trim(.group)           # trim spaces around the letter codes
+  )
+
+# Recompute the summary
+table_of_anova <- df_stats %>% 
+  group_by(group) %>% 
+  summarize(
+    mean  = mean(expression, na.rm = TRUE),
+    quant = quantile(expression, probs = 0.75, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  left_join(cld_tbl, by = "group") %>%   # <-- proper keyed join
+  arrange(desc(mean))
+
+# This is for plotting, but I ended up not plotting the letters as the groups and letters on the X didn't match. 
+#table_of_anova2 <- table_of_anova %>%
+#  separate(group, into = c("Genotype", "treatment"), sep = "\\.", remove = FALSE)
+
+
+```
+
+``` {r plot}
+
+y_min = 0
+y_max = 13
+
+Fig3C <- ggplot(df_long, aes(x = Genotype, y = DCQ_rel, fill = treatment)) +
+  geom_boxplot(outlier.shape = NA, alpha = 1) +
+  geom_jitter(size = 2, position = position_dodge(width = 0.75))+
+  labs(x = "Genotype", y = " MYB Expression", fill = "Treatment") +
+  scale_y_continuous(limits = c(y_min, y_max)) +
+  theme_linedraw() 
+  #geom_text(data = table_of_anova,
+   #        aes(x = Genotype, y = quant, label = cld),
+   #        vjust = -1, hjust = -1, size = 3) # Manually annotating the letters via Illustrator as this is far more complicated to code. 
+
+# Stats are found in table_of_anova2
+
+print(table_of_anova)
+
+print(Fig3C)
+
+ggsave("Fig3C.eps", width = 7, height = 5) # These dimensions fit overall better with the whole plot
+
+# I changed the colours to match Fig 1A as the treatment group was principally the same in Illustrator. 
+
+```
+

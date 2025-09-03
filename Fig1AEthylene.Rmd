@@ -1,0 +1,97 @@
+---
+title: "Fig 1A - Ethylene"
+author: "Brian Behnken"
+date: "2025-08-29"
+output: html_document
+---
+
+```{r Setup}
+
+cat("\014")
+rm(list = ls())
+
+pacman::p_load(pacman, dplyr, ggplot2, forcats)
+
+# Load the cleaned and rearranged data
+ethylene_data <- read.csv("Fig1a_ethylene.csv")
+
+# Reorder the Response factor to place "Unresponsive" on the left and "Responsive" on the right
+ethylene_data <- ethylene_data %>%
+    mutate(Response = factor(Response, levels = c("Unresponsive", "Responsive")))
+
+# Arrange Accession in alphanumeric order within each Response group
+ethylene_data <- ethylene_data %>%
+    group_by(Response) %>%
+    mutate(Accession = fct_inorder(factor(Accession))) %>%
+    ungroup()
+
+head(ethylene_data)
+# ADS is the one who did this initial screen.
+
+```
+
+``` {R T test}
+
+# Since this was screen data for the purposes of illustrating the differences between the responsive and unresponsive accessions, we didn't test for normalcy. I find this acceptable given that if we wanted to follow up with any of them, we'd use a larger sample size, since, as you may observe, some groups only have two biological replicates. Additionally, these screens take a lot of time and effort, and so screening 21 is a full day's work. 
+
+# Write a function to perform a t-test between H2O and In11 for any given accession
+t_test <- function(data, accession) {
+  # Filter data for the given accession and separate H2O and In11 treatments
+  subset_data <- data %>% filter(Accession == accession)
+  
+  # Perform t-test only if both treatments (H2O and In11) are present
+  if (all(c("H2O", "In11") %in% subset_data$Treatment)) {
+    h2o_values <- subset_data %>% filter(Treatment == "H2O") %>% pull(Peaks)
+    in11_values <- subset_data %>% filter(Treatment == "In11") %>% pull(Peaks)
+    
+    # Perform t-test
+    t_test_result <- t.test(h2o_values, in11_values, var.equal = TRUE)  # Assuming equal variance; adjust if necessary
+    return(data.frame(Accession = accession,
+                      t_statistic = t_test_result$statistic,
+                      p_value = t_test_result$p.value,
+                      mean_H2O = mean(h2o_values, na.rm = TRUE),
+                      mean_In11 = mean(in11_values, na.rm = TRUE)))
+  } else {
+    return(data.frame(Accession = accession,
+                      t_statistic = NA,
+                      p_value = NA,
+                      mean_H2O = NA,
+                      mean_In11 = NA))
+  }
+}
+
+# Get a list of unique accessions
+accessions <- unique(ethylene_data$Accession)
+
+# Apply the t-test function to each accession and collect results
+t_test_results <- bind_rows(lapply(accessions, function(acc) t_test(ethylene_data, acc)))
+
+# Print the results
+print(t_test_results)
+
+# Optionally, save the results to a CSV file
+write.csv(t_test_results, "t_test_results.csv", row.names = FALSE)
+
+```
+
+``` {R }
+
+# Generate the box plot with jittered points (I hate when jitter is strewn everywhere. I will manually adjust jitter to show overlapping points, but if they don't need to be corrected from a neat line, make it clean.)
+
+paperplot <- ggplot(ethylene_data, aes(x = Accession, y = Peaks, fill = Treatment)) +
+    geom_boxplot(outlier.shape = NA, width = 0.5, position = position_dodge(0.8)) +  # Dodge for side-by-side box plots
+    geom_jitter(aes(color = Treatment), position = position_dodge(0.8), size = 1, alpha = 1) +  # Jittered points (EPS doesn't handle alpha <1)
+    scale_fill_manual(values = c("H2O" = "white", "In11" = "forestgreen")) +
+    scale_color_manual(values = c("H2O" = "black", "In11" = "black")) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(x = "Accession", y = "Ethylene (nL g^-1 hr^-1)", fill = "Treatment") +
+  facet_grid(~ Response, scales = "free_x", space = "free_x")# Facet with unresponsive on the left
+
+print(paperplot)
+
+ggsave("paperplot.eps", width = 9, height = 3, units = "in")
+
+# all other details of dividers and significance indicators are in Illustrator as I am more comfortable working there on visuals than in R.
+
+```
