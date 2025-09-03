@@ -45,4 +45,7 @@ The code for Figure 3C loads a data frame with MYB expression data from qPCR cur
 
 The coee for Figure 3D loads a combined data frame of herbivory initial and finall masses curated by BQB and filters out the intial masses so we can compare the final masses of the caterpillars. It tests the data for normality before running a Welch's ANOVA and plotting. 
 
+The bash script for creating the BAM files takes the paired-end read files and sorts them against the Phaseolus vulgaris G19833 (Pvulgaris_442_v2.0.fa; Phytozome) genome. 
+The bash script for quality control metrics analyzes all of the BAM files and ouputs a summary table of statistics for the data generated from Whole Genome Sequencing (WGS).
+
 Code for supplementals forthcoming. DOI forthcoming. 
