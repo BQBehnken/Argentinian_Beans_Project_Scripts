@@ -8,8 +8,8 @@ The research and data generated are the work of all of us together, including as
 I credit W George to teaching me how to code in R and getting me started on my coding journey when I needed it most. 
 
 As such, the data and code presented here are not solely mine, but our collaborative effort to identify what is going on with these puzzling beans from Jujuy. 
-Much of the code from Figure 1A and B is by ADS, but I optimized it. 
-Much of the code from Figure 2B and C is by WG, and I only cleaned it up. 
+The base code from Figure 1A and B is by ADS, but I optimized it and annotated it. 
+Much of the code from Figure 2B and C is by WG, and I cleaned it up and annotated it.
 
 The rest of the code from Figure 3 as well as from the supplementals is my work with debugging and package recommendations from various GPTs. 
 
@@ -26,3 +26,21 @@ But it is perfectly valid to predict that the presence of a "watchman" molecule 
 For a good comparison, check out our tritrophic interactions paper. 
 
 Each script that I provide has its own internal annotation and commentary on why we did what we did, who generated which dataset, as well as any other choices we made in presenting the data. 
+
+The code for Figure 1A loads data from an ethylene screen by ADS, wrangles the data, and performs a T-test to categorize the accessions as responsive or unresponsive. The plot displays the two groups in two facets, and shows the raw data of wound + water treatment vs. wound + In11 on the beans. Colouration is done in Illustrator. 
+
+The code for Figure 1B loads world data from rnaturalearth and coalesces our 21 accessions by their USDA GRIN geotagged longitude and latitude values into a data frame. To plot, I grouped them into a summary data frame and displayed them as bubbles on a map that shows context of where in Argentina they are from. I left extra space to annotate the accessions in Illustrator. 
+
+The code for Figure 2A loads data collected by AKS, wrangles the data by decoding the initial raw data values into the assignments we ended up using in our project, and exports the summary data frame. It then tests the data for normality before performing a t-test and plotting the two groups. The notable thing about this data is that homozygous and heterozygous alleles are grouped together and shown for ease as one group against the homozygous low-expression allele as a ratio of In11/H2O. 
+
+The code for Figure 2B binds two data sets curated by WGS, decodes the internal alias values we used for the accessions, and tests them for normality. It then selects the four promoters of interest that we selected based on earlier expression data and runs a Welch's ANOVA on their data before plotting. 
+
+The code for Figure 2C binds six data sets curated by WGS, decodes the internal alias values we used for the accessions, and filters out data that I was not able to interpret or wasn't clear. Because of the six different days of testing, and the wildly different values the plate reader gives out, we opted to use Z scores as a normalization factor across all the data over the weeks this data was compiled. It then tests for normality and runs a Welch's ANOVA before plotting the values in the same order as 2B. Lastly, there are some stats I ran in order to make specific summary claims about the data. 
+
+The two code sets for Figure 3A load separate data frames curated by WGS and BQB, decodes the data, tests for normality, and runs either an ANOVA or t-test on the data before plotting. 
+
+The code for Figure 3B loads a data frame with parental and NIL ethylene peak data curated by BQB. It wrangles it before splitting it into four data frames to test for normality before running an ANOVA on the data (since we have 3 treatments per biological replicate) and plotting the two NILs together as two facets. Colouration was performed in Illustrator. 
+
+The code for Figure 3C loads a data frame with MYB expression data from qPCR curated by BQB. Two biological replicaets from one accession died, but they were to help establish a baseline for the two NILs, so we omitted them from testing and analysis. The rest of the replicates were tested for normality and were submitted to an ANOVA before plotting. Colouration was performed in Illustrator. 
+
+The coee for Figure 3D loads a combined data frame of herbivory initial and finall masses curated by BQB and filters out the intial masses so we can compare the final masses of the caterpillars. It tests the data for normality before running a Welch's ANOVA and plotting. 
