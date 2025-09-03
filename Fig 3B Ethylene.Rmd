@@ -12,7 +12,7 @@ rm(list = ls())
 
 pacman::p_load(dplyr, tidyr, ggplot2, car, emmeans, rstatix, stringr, multcompView)
 
-df <- read.csv("RDATA.csv")
+df <- read.csv("Fig3b_ethylene.csv")
 
 colnames(df)
 
