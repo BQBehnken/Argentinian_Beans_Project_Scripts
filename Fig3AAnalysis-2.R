@@ -1,17 +1,9 @@
----
-title: "2025-08-15 INR Expression"
-author: "Brian Behnken"
-date: "2025-08-16"
-output: html_document
----
-
-```{r setup}
 cat("\014")
 rm(list = ls())
 
 pacman::p_load(dplyr, ggplot2, readr, car, emmeans)
 
-# Testing base INR expression in Backcross 
+# Testing base INR expression in Backcross
 
 df <- readr::read_csv("Fig3a_expression2.csv", show_col_types = FALSE) %>%
   mutate(
@@ -27,10 +19,7 @@ colnames(df)
 
 head(df)
 
-```
 
-
-```{r "Normalcy Tests" & Statistics}
 
 
 # ==== Part A: "Normalcy" checks & omnibus test across genotypes ===============
@@ -54,10 +43,7 @@ head(df)
 # Simple two-sided Student’s t-test since data is "normal"
 t.test(DCQ ~ Genotype, data = df, var.equal = TRUE) # t = -6.9261, df = 8, p-value = 0.0001213
 
-```
 
-
-```{r plot}
 
 min_mean <- df %>%
   group_by(Genotype) %>%
@@ -87,6 +73,6 @@ ggsave("plot2.eps", width = 2, height = 3)
 
 # I chose to annotate the comparison bar with statistical significance in Illustrator rather than code it in, as I am far more experience in Adobe software than I am in R. I just scaled y to leave some headroom at the top for that. 
 
-```
+
 
 
