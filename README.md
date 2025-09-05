@@ -1,4 +1,4 @@
-These are the scripts and data for our preprint on Argentinian beans. 
+These are the scripts and data for our preprint on Argentinian beans (https://doi.org/10.1101/2025.09.03.674063). 
 In accordance with both my values for transparency and the requirements of the journal, I'm submitting all my data and scripts for analysis onto this repository. 
 
 No project is perfect, and thus I treat this as a stepping stone and learning experience for better science down the road. Feel free to reach out with comments and corrections if you feel so inclined. 
