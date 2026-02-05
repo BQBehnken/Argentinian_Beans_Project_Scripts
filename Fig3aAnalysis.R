@@ -5,8 +5,6 @@ pacman::p_load(pacman, dplyr, ggplot2, emmeans, rio, tidyr, multcompView, BiocMa
 
 # Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
 
-# Testing the hypothesis that in low expression P. vulgaris, marker gene like MYB will also be less expressed than in high expression plant.
-
 df <- readr::read_csv("Fig3a_expression1.csv", show_col_types = FALSE) %>%
   mutate(
     Genotype = factor(Genotype, levels = c("G19833", "PI638858", "C4", "C5")),
@@ -21,7 +19,7 @@ colnames(df)
 
 head(df)
 
-# ==== Part A: "Normalcy" checks & omnibus test across genotypes ===============
+# ==== Part A: "Normalcy" checks ===============
 # We compare induction magnitude across genotypes: response = DCQ (Delta Cq values)
 # 
 
