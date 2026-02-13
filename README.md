@@ -45,10 +45,10 @@ The code for Figure 3C loads a data frame with MYB expression data from qPCR cur
 
 The code for Figure 3D loads a combined data frame of herbivory initial and finall masses curated by BQB and filters out the intial masses so we can compare the final masses of the caterpillars. It tests the data for normality before running a Welch's ANOVA and plotting. 
 
-The bash script for creating the BAM files takes the paired-end read files and sorts them against the Phaseolus vulgaris G19833 (Pvulgaris_442_v2.0.fa; Phytozome) genome. 
+The bash script for creating the BAM files takes the paired-end read files and sorts them against the Phaseolus vulgaris G19833 (Pvulgaris_442_v2.0.fa; Phytozome) genome. The paired-end files are available at https://doi.org/10.5281/zenodo.18603657 and https://doi.org/10.5281/zenodo.18636653.
 The bash script for quality control metrics analyzes all of the BAM files and ouputs a summary table of statistics for the data generated from Whole Genome Sequencing (WGS).
 The bash script for SNP calls exises the INR locus and calls SNPs in each of the 21 accessions against G19833 and loads them into a multi track VCF and multi fasta for viewing on third party viewers or IGV/IGB. 
 
 The code for S7 Figure (the Climate Maps) pull climate and elevation data from two external sources and coerces the data into rasters and data frames before creating a program to output a fine resolution map for mean temp and rainfall for each of the 12 months as well as a one-off base elevation map.
 
-Code for supplementals forthcoming. DOI forthcoming. 
+Code for supplementals forthcoming. DOI: 10.1371/journal.pone.0343332
