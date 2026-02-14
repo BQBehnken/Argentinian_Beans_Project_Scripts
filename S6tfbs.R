@@ -4,8 +4,8 @@ rm(list = ls())
 
 pacman::p_load(tidyr, dplyr, ggplot2, ggmsa, ggpubr, cowplot)
 
-tfbs_df <- read.delim("fimo.txt") # reads in transcription factor data
-snp_df <- read.csv(file = "Book1.csv") # reads in SNP data
+tfbs_df <- read.delim("S6fimo.txt") # reads in transcription factor data
+snp_df <- read.csv(file = "S6Book1.csv") # reads in SNP data
 
 snp_df$Family <- as.character(snp_df$Family)
 
