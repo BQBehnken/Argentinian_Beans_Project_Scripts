@@ -49,4 +49,4 @@ The code for S5 loads qPCR data and outputs a bar graph showing no inducibility.
 The code for S6 loads TFBS analysis from fimo and annotations and gives a visual topography of different TFBS -1800 bp upstream from the translation start site. 
 The code for S7 Figure (the Climate Maps) pull climate and elevation data from two external sources and coerces the data into rasters and data frames before creating a program to output a fine resolution map for mean temp and rainfall for each of the 12 months as well as a one-off base elevation map.
 
-Code for supplementals forthcoming. DOI: 10.1371/journal.pone.0343332
+DOI: 10.1371/journal.pone.0343332
