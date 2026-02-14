@@ -14,7 +14,7 @@ pacman::p_load(dplyr, ggplot2, multcompView)
 
 # --- Import data 
 
-df <- read.csv("qpcrdata.csv")
+df <- read.csv("S3_qpcrdata.csv")
 
 head(df)
 
